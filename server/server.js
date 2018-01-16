@@ -8,6 +8,7 @@ const user = require('./user');
 let users = user.users;
 
 const PORT = process.env.PORT || 3000;
+const {generateMessage} = require('./utils/message');
 const publicPath = path.join(__dirname, '../public');
 
 let app = express();
@@ -19,18 +20,10 @@ let messages = [];
 io.on('connection', (socket) => {
 
     console.log('New user connected');
-    console.log(socket);
-    socket.emit('newMessage', {
-      from: 'Admin',
-      text: 'Welcome to the chat',
-      createdAt: new Date().getTime()
-    });
+//console.log(socket);
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat'));
 
-    socket.broadcast.emit('newMessage', {
-      from: 'Admin',
-      text: 'New user joined',
-      createdAt: new Date().getTime()
-    });
+    socket.broadcast.emit('newMessage',  generateMessage('Admin', 'New user joined'));
 
     socket.on('createMessage', (message) => {
 
