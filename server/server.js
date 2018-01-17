@@ -25,34 +25,16 @@ io.on('connection', (socket) => {
 
     socket.broadcast.emit('newMessage',  generateMessage('Admin', 'New user joined'));
 
-    socket.on('createMessage', (message) => {
-
+    socket.on('createMessage', (message, callback) => {
+      io.emit('newMessage', generateMessage(message.from, message.text));
       console.log(message);
-      // io.emit('newMessage', {
-      //   from: message.from,
-      //   text: message.text,
-      //   createdAt: new Date().getTime()
-      // });
-
-      socket.broadcast.emit('newMessage', {
-        from: message.from,
-        text: message.text,
-        createdAt: new Date().getTime()
-      });
+      callback('This is from the server');
 
     });
 
-    socket.on('listUsers', () => {
-      socket.emit('users', {
-        users
-      });
-    });
-
-    //console.log('filtrando funcionando');
-
-  // socket.on('createEmail', (newEmail) => {
-  //   console.log(newEmail);
-  // });
+    socket.on('createLocationMessage', (coords) => {
+      io.emit('newMessage', generateMessage('Admin', `${coords.latitude}, ${coords.longitude}`));
+   });
 
   socket.on('disconnect', () => {
     console.log('User disconnected');
