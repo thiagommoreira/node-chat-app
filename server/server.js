@@ -8,19 +8,21 @@ const user = require('./user');
 let users = user.users;
 
 const PORT = process.env.PORT || 3000;
+
 const {generateMessage, generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
+const {Users} = require('./utils/users');
 
 const publicPath = path.join(__dirname, '../public');
 
 let app = express();
 let server = http.createServer(app);
 let io = socketIO(server);
+var users = new Users();
 
 let messages = [];
 
 app.use(express.static(publicPath));
-
 
 io.on('connection', (socket) => {
 
@@ -32,11 +34,15 @@ io.on('connection', (socket) => {
 
     socket.on('join', (params, callback) => {
       if(!isRealString(params.name) || !isRealString(params.room)) {
-         callback('Name and room name are required.');
+         return callback('Name and room name are required.');
       }
 
-      socket.join(params.room);
 
+      socket.join(params.room);
+      users.removeUser(socket.id);
+      users.addUser(socket.id, params.name, params.room);
+
+      io.to(params.room).emit('updateUserList', users.getUserList(params.room));
       socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
       socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin',`${params.name} has joined.`));
       callback();
